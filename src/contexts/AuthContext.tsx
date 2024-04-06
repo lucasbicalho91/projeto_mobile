@@ -2,7 +2,7 @@ import React, {useState, createContext, ReactNode, useEffect } from "react";
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-import { api } from '../services/api'
+import users from '../users'
 
 type AuthContextData = {
   user: UserProps;
@@ -44,56 +44,43 @@ export function AuthProvider({children}: AuthProviderProps) {
 
   const isAuthenticated = !!user.name;
 
-  useEffect(() => {
-
-    async function getUser() {
+  async function getUser() {
+    try {
       const userInfo = await AsyncStorage.getItem('@pizzariamobile');
-      let hasUser: UserProps = JSON.parse(userInfo || '{}');
-
-      if(Object.keys(hasUser).length > 0) {
-        api.defaults.headers.common['Authorization'] = `Bearer ${hasUser.token}`;
-
-        setUser({
-          id: hasUser.id,
-          name: hasUser.name,
-          email: hasUser.email,
-          token: hasUser.token
-        })
+      if (userInfo) {
+        const user = JSON.parse(userInfo);
+        setUser(user);
       }
-
+    } catch (error) {
+      console.log('Erro ao obter usuário do AsyncStorage:', error);
+    } finally {
       setLoading(false);
-
     }
-
-    getUser();
-
-  }, [])
+  }
+    
+    useEffect(() => {
+      getUser();
+    }, []);
 
   async function signIn({email, password}: SignInProps) {
     setLoadingAuth(true);
 
     try {
-      const response = await api.post('/session', {
-        email,
-        password
-      })
+      const user = users.find(user => user.email === email && user.password === password);
 
-      const { id, name, token } = response.data;
-
-      const data = {
-        ...response.data
-      };
-
-      await AsyncStorage.setItem('@pizzariamobile', JSON.stringify(data));
-
-      api.defaults.headers.common['Authorization'] = `Bearer ${token}`
+      if (user) {
+      await new Promise(resolve => setTimeout(resolve, 1000));
 
       setUser({
-        id,
-        name,
-        email,
-        token
-      })
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        token: ''
+      });
+
+      } else {
+        throw new Error('E-mail ou senha incorretos');
+      }
 
       setLoadingAuth(false);
 
