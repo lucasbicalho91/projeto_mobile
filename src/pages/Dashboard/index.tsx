@@ -4,10 +4,10 @@ import { View, Text, SafeAreaView, TouchableOpacity, TextInput, StyleSheet } fro
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
-import { StackPramnsList } from '../../routes/app.routes';
+import { StackPramsList } from '../../routes/app.routes';
 
 export default function Dashboard() {
-  const navigation = useNavigation<NativeStackNavigationProp<StackPramnsList>>();
+  const navigation = useNavigation<NativeStackNavigationProp<StackPramsList>>();
 
   const [number, setNumber] = useState('');
 
