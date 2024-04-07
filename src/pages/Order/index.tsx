@@ -1,35 +1,66 @@
-import React from "react";
+import React, { useState, useEffect} from "react";
 import { View, Text, StyleSheet, TouchableOpacity, TextInput } from 'react-native';
 
-import { useRoute, RouteProp } from "@react-navigation/native";
+import { useRoute, RouteProp, useNavigation } from "@react-navigation/native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { Feather } from '@expo/vector-icons';
+
+import categories from "../../categories";
 
 type RouteDetailParams = {
   Order: {
     number: string | number;
-    order_id: string;
   }
+}
+
+type CategoryProps = {
+  id: string,
+  name: string;
 }
 
 type OrderRouteProps = RouteProp<RouteDetailParams, 'Order'>
 
 export default function Order() {
   const route = useRoute<OrderRouteProps>();
+  const navigation = useNavigation();
+
+  const [category, setCategory] = useState<CategoryProps[] | []>([]);
+  const [categorySelected, setCategorySelected] = useState<CategoryProps>();
+
+  const [amount, setAmount] = useState('1');
+
+  useEffect(() => {
+    async function loadInfo() {
+      
+      setCategory(categories);
+      setCategorySelected(categories[0]);
+    }
+
+    loadInfo();
+  }, [])
+
+  async function handleCloseOrder() {
+    navigation.goBack();
+  }
 
   return (
     <View style={styles.container}>
       
       <View style={styles.header}>
         <Text style={styles.title}>Mesa {route.params.number}</Text>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={handleCloseOrder}>
           <Feather name="trash-2" size={28} color="#FF3F4B" />
         </TouchableOpacity>
       </View>
 
-      <TouchableOpacity style={styles.input}>
-        <Text style={{ color: '#FFF'}}> Pizzas </Text>
-      </TouchableOpacity>
+      {category.length !== 0 && (
+        <TouchableOpacity style={styles.input}>
+          <Text style={{ color: '#FFF'}}> 
+            {categorySelected?.name}
+          </Text>
+        </TouchableOpacity>
+      )}
 
       <TouchableOpacity style={styles.input}>
         <Text style={{ color: '#FFF'}}> Pizza de Calabresa </Text>
@@ -41,7 +72,8 @@ export default function Order() {
           style={[styles.input, { width: '60%', textAlign: 'center' } ]}
           placeholderTextColor="#F0F0F0"
           keyboardType="numeric"
-          value="1"
+          value={amount}
+          onChangeText={setAmount}
         />
       </View>
 

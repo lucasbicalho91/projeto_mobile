@@ -16,7 +16,8 @@ export default function Dashboard() {
       return;
     }
 
-    navigation.navigate('Order', { number: number, order_id: '39a97080-d2db-49ba-9716-db3f4185a5b3' });
+    navigation.navigate('Order', { number: number });
+    setNumber('');
 
   }
 

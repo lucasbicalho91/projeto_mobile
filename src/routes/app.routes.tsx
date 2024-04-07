@@ -8,7 +8,6 @@ export type StackPramnsList = {
   Dashboard: undefined;
   Order: {
     number: number | string;
-    order_id: string;
   }
 }
 
