@@ -9,8 +9,12 @@ export type StackPramsList = {
   Dashboard: undefined;
   Order: {
     number: number | string;
+    order_id: string;
   };
-  FinishOrder: undefined
+  FinishOrder: {
+    number: number | string;
+    order_id: string;
+  }
 }
 
 const Stack = createNativeStackNavigator<StackPramsList>();

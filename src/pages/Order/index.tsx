@@ -16,6 +16,7 @@ import { StackPramsList } from "../../routes/app.routes";
 type RouteDetailParams = {
   Order: {
     number: string | number;
+    order_id: string;
   }
 }
 
@@ -116,7 +117,10 @@ export default function Order() {
   }
 
   function handleFinishOrder(){
-    navigation.navigate("FinishOrder")
+    navigation.navigate("FinishOrder", { 
+      number: route.params?.number,
+      order_id: route.params?.order_id
+    })
   }
 
   return (

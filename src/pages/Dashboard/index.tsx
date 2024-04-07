@@ -16,8 +16,19 @@ export default function Dashboard() {
       return;
     }
 
-    navigation.navigate('Order', { number: number });
-    setNumber('');
+    function generateOrderId() {
+      const timestamp = Date.now().toString(); 
+      const randomNum = Math.floor(Math.random() * 10000).toString(); 
+      return timestamp + '-' + randomNum;
+    }  
+  
+
+    navigation.navigate('Order', { 
+      number: number, order_id:  
+      generateOrderId()
+    });
+
+      setNumber('');
 
   }
 
