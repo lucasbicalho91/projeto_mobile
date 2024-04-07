@@ -6,6 +6,7 @@ import { useRoute, RouteProp, useNavigation } from "@react-navigation/native";
 import { Feather } from '@expo/vector-icons';
 
 import categories from "../../categories";
+import productsData from "../../products";
 import { ModalPicker } from "../../components/ModalPicker";
 
 type RouteDetailParams = {
@@ -19,6 +20,11 @@ export type CategoryProps = {
   name: string;
 }
 
+type ProductProps = {
+  id: string,
+  name: string
+}
+
 type OrderRouteProps = RouteProp<RouteDetailParams, 'Order'>
 
 export default function Order() {
@@ -26,22 +32,37 @@ export default function Order() {
   const navigation = useNavigation();
 
   const [category, setCategory] = useState<CategoryProps[] | []>([]);
-  const [categorySelected, setCategorySelected] = useState<CategoryProps>();
+  const [categorySelected, setCategorySelected] = useState<CategoryProps | undefined>();
   const [modalCategoryVisible, setModalCategoryVisible] = useState(false);
+
+  const [products, setProducts] = useState<ProductProps[]>([]);
+  const [productSelected, setProductSelected] = useState<ProductProps | undefined>();
+  const [modalProductVisible, setModalProductVisible] = useState(false);
 
   const [amount, setAmount] = useState('1');
 
   useEffect(() => {
-    async function loadInfo() 
-    
-    {
-      
+    async function loadInfo() {
+
       setCategory(categories);
       setCategorySelected(categories[0]);
+
     }
 
     loadInfo();
-  }, [])
+  }, []);
+
+  useEffect(() => {
+    async function loadProducts() {
+
+      const filteredProducts = productsData.filter(product => product.category_id === categorySelected?.id);
+      setProducts (filteredProducts);
+      setProductSelected(filteredProducts[0])
+      
+    }
+
+    loadProducts();
+  }, [categorySelected]);
 
   async function handleCloseOrder() {
     navigation.goBack();
@@ -49,6 +70,10 @@ export default function Order() {
 
   function handleChangeCategory(item: CategoryProps) {
     setCategorySelected(item);
+  }
+
+  function handleChangeProduct(item: ProductProps) {
+    setProductSelected(item);
   }
 
   return (
@@ -69,9 +94,13 @@ export default function Order() {
         </TouchableOpacity>
       )}
 
-      <TouchableOpacity style={styles.input}>
-        <Text style={{ color: '#FFF'}}> Pizza de Calabresa </Text>
+      {products.length !== 0 && (
+      <TouchableOpacity style={styles.input}  onPress={ () => setModalProductVisible(true) }>
+        <Text style={{ color: '#FFF'}}> 
+          {productSelected?.name}
+        </Text>
       </TouchableOpacity>
+      )}
 
       <View style={styles.qtdContainer}>
         <Text style={styles.qtdText}> Quantidade </Text>
@@ -104,6 +133,20 @@ export default function Order() {
         handleCloseModal={ () => setModalCategoryVisible(false) }
         options={category}
         selectedItem={ handleChangeCategory }
+      />
+
+      </Modal>
+
+      <Modal
+        transparent={true}
+        visible={modalProductVisible}
+        animationType="fade"             
+      >
+      
+      <ModalPicker 
+        handleCloseModal={ () => setModalProductVisible(false) }
+        options={products}
+        selectedItem={ handleChangeProduct }
       />
 
       </Modal>
