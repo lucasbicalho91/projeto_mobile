@@ -5,7 +5,10 @@ import { AuthUserController } from './controllers/user/AuthUserController';
 import { DetailUserController } from './controllers/user/DetailUserController';
 
 import { CreateCategoryController } from './controllers/category/CreateCategoryController';
-import { LIstCategoriesController } from './controllers/category/ListCategoriesController';
+import { ListCategoriesController } from './controllers/category/ListCategoriesController';
+
+import { CreateProductController } from './controllers/product/CreateProductController';
+import { ListByCategoryController } from './controllers/product/ListByCategoryController';
 
 import { isAuthenticated } from './middlewares/isAuthenticated';
 
@@ -18,7 +21,10 @@ router.get('/detail', isAuthenticated, new DetailUserController().handle);
 
 // Rotas de Categoria
 router.post('/category', isAuthenticated, new CreateCategoryController().handle);
-router.get('/category', isAuthenticated, new LIstCategoriesController().handle)
+router.get('/category', isAuthenticated, new ListCategoriesController().handle);
 
+// Rotas de Produto
+router.post('/product', isAuthenticated, new CreateProductController().handle);
+router.get('/category/product', isAuthenticated, new ListByCategoryController().handle);
 
 export { router };
