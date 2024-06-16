@@ -13,6 +13,8 @@ import { ListItem } from "../../components/ListItem";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { StackPramsList } from "../../routes/app.routes";
 
+import { api } from "../../services/api";
+
 type RouteDetailParams = {
   Order: {
     number: string | number;
@@ -84,7 +86,19 @@ export default function Order() {
   }, [categorySelected]);
 
   async function handleCloseOrder() {
-    navigation.goBack();
+    try {
+      
+      await api.delete('order', {
+        params: {
+          order_id: route.params?.order_id
+        }
+      })
+
+      navigation.goBack();
+
+    } catch (error) {
+      
+    }
   }
 
   function handleChangeCategory(item: CategoryProps) {
@@ -128,6 +142,7 @@ export default function Order() {
       
       <View style={styles.header}>
         <Text style={styles.title}>Mesa {route.params.number}</Text>
+
         {items.length === 0 && (
           <TouchableOpacity onPress={handleCloseOrder}>
             <Feather name="trash-2" size={28} color="#FF3F4B" />

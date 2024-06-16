@@ -1,5 +1,5 @@
 import React, { useState, useContext } from "react";
-import { View, Text, Button, SafeAreaView, TouchableOpacity, TextInput, StyleSheet } from 'react-native';
+import { Text, SafeAreaView, TouchableOpacity, TextInput, StyleSheet } from 'react-native';
 
 import { AuthContext } from "../../contexts/AuthContext";
 
@@ -7,6 +7,8 @@ import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
 import { StackPramsList } from '../../routes/app.routes';
+
+import { api } from "../../services/api";
 
 export default function Dashboard() {
   const { signOut } = useContext(AuthContext);
@@ -19,24 +21,26 @@ export default function Dashboard() {
       return;
     }
 
-    function generateOrderId() {
-      const timestamp = Date.now().toString(); 
-      const randomNum = Math.floor(Math.random() * 10000).toString(); 
-      return timestamp + '-' + randomNum;
-    }  
-  
+    const response = await api.post('/order', {
+      table: Number(number)
+    })
 
     navigation.navigate('Order', { 
-      number: number, order_id:  
-      generateOrderId()
+      number: number, 
+      order_id: response.data.id
     });
 
-      setNumber('');
+    setNumber(''); 
 
   }
 
   return (
     <SafeAreaView style={styles.container}>
+
+      <TouchableOpacity style={styles.logout} onPress={signOut}>
+        <Text style={styles.buttonText}>Logout</Text>
+      </TouchableOpacity>
+
       <Text style={styles.title}>Novo pedido</Text>
 
       <TextInput 
@@ -50,10 +54,6 @@ export default function Dashboard() {
 
       <TouchableOpacity style={styles.button} onPress={openOrder}>
         <Text style={styles.buttonText}>Abrir mesa</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity style={styles.button} onPress={signOut}>
-        <Text style={styles.buttonText}>Sair do App</Text>
       </TouchableOpacity>
 
     </SafeAreaView>
@@ -85,11 +85,22 @@ const styles = StyleSheet.create({
     color: '#FFF'
   },
   button: {
-    width: '90%',
+    width: '70%',
     height: 40,
     backgroundColor: '#3fffa3',
     borderRadius: 4,
-    marginVertical: 12,
+    marginVertical: 20,
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  logout: {
+    position: 'absolute',
+    top: 30,
+    right: 20,
+    width: '30%',
+    height: 40,
+    backgroundColor: '#FF3F4b',
+    borderRadius: 4,
     justifyContent: 'center',
     alignItems: 'center'
   },
