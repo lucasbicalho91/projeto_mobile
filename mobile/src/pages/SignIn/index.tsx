@@ -1,35 +1,28 @@
-import Reac, {useState, useContext} from "react";
+import React, { useState, useContext } from "react";
 import { View, Text, StyleSheet, Image, TextInput, TouchableOpacity, ActivityIndicator } from 'react-native';
-
-import { AuthContext } from '../../contexts/AuthContext'
+import { AuthContext } from '../../contexts/AuthContext';
 
 export default function SignIn() {
-
   const { signIn, loadingAuth } = useContext(AuthContext);
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
   async function handleLogin() {
-
-    if(email === '' || password === '') {
+    if (email === '' || password === '') {
       return;
     }
 
-      await signIn({ email, password })
-
+    await signIn({ email, password });
   }
 
   return (
     <View style={styles.container}>
-
       <Image 
         style={styles.logo}
         source={require('../../assets/logo.png')}
       />
-
       <View style={styles.inputContainer}>
-
         <TextInput 
           placeholder="Digite seu email"
           style={styles.input}
@@ -37,7 +30,6 @@ export default function SignIn() {
           value={email}
           onChangeText={setEmail}
         />
-
         <TextInput 
           placeholder="Digite sua senha"
           style={styles.input}
@@ -46,20 +38,16 @@ export default function SignIn() {
           value={password}
           onChangeText={setPassword}
         />
-
         <TouchableOpacity style={styles.button} onPress={handleLogin}>
           { loadingAuth ? (
             <ActivityIndicator size={25} color="#FFF"/>
           ) : (
-            <Text style={styles.buttonText}>Acessar</Text>
+            <Text style={styles.buttonText}> Acessar </Text>
           )}
         </TouchableOpacity>
-
       </View>
-
     </View>
-    
-  )
+  );
 }
 
 const styles = StyleSheet.create({
@@ -103,4 +91,4 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#101026'
   }
-})
+});

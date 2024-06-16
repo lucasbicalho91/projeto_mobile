@@ -1,91 +1,117 @@
-import React, {useState, createContext, ReactNode, useEffect } from "react";
+import React, { useState, createContext, ReactNode, useEffect } from "react";
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-import users from '../users'
+import { api } from "../services/api";
 
 type AuthContextData = {
   user: UserProps;
   isAuthenticated: boolean;
-  signIn: (credencials: SignInProps) => Promise<void>;
+  signIn: (credentials: SignInProps) => Promise<void>;
   loadingAuth: boolean;
   loading: boolean;
-  signOut: () => Promise<void>;
-}
+  signOut: () => Promise<void>
+};
 
 type UserProps = {
   id: string;
   name: string;
   email: string;
   token: string;
-}
+};
 
 type AuthProviderProps = {
   children: ReactNode;
-}
+};
 
 type SignInProps = {
   email: string;
   password: string;
-}
+};
 
 export const AuthContext = createContext({} as AuthContextData);
 
-export function AuthProvider({children}: AuthProviderProps) {
+export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<UserProps>({
     id: '',
     name: '',
     email: '',
-    token: ''
-  })
+    token: '',
+  });
 
   const [loadingAuth, setLoadingAuth] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const isAuthenticated = !!user.name;
 
-  async function getUser() {
-    try {
-      const userInfo = await AsyncStorage.getItem('@pizzariamobile');
-      if (userInfo) {
-        const user = JSON.parse(userInfo);
-        setUser(user);
-      }
-    } catch (error) {
-      console.log('Erro ao obter usuário do AsyncStorage:', error);
-    } finally {
-      setLoading(false);
-    }
-  }
-    
-    useEffect(() => {
-      getUser();
-    }, []);
+  useEffect(() => {
 
-  async function signIn({email, password}: SignInProps) {
+    async function getUser() {
+
+      const userInfo = await AsyncStorage.getItem('pizzaria_tads');
+      let hasUser: UserProps = JSON.parse(userInfo || '{}')
+      if(Object.keys(hasUser).length > 0) {
+        api.defaults.headers.common['Authorization'] = `Bearer ${hasUser.token}`;
+
+        setUser({
+          id: hasUser.id,
+          name: hasUser.email,
+          email: hasUser.email,
+          token: hasUser.token
+        })
+      }
+
+      setLoading(false);
+
+    }
+
+    getUser();
+
+  }, [])
+
+  async function signIn({ email, password }: SignInProps) {
     setLoadingAuth(true);
 
     try {
-      const user = users.find(user => user.email === email && user.password === password);
-
-      if (user) {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      setUser({
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        token: ''
+      const response = await api.post('/session', {
+        email,
+        password,
       });
 
-      } else {
-        throw new Error('E-mail ou senha incorretos');
+      const { id, name, token } = response.data;
+
+      const data = {
+        ...response.data
       }
+
+      await AsyncStorage.setItem('@pizzaria_tads', JSON.stringify(data));
+
+      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+
+      setUser({
+        id, 
+        name,
+        email,
+        token
+      })
 
       setLoadingAuth(false);
 
-    }catch(err){
-      console.log('erro ao acessar', err);
+      // Atualizar o estado do usuário com os dados da resposta
+      setUser({
+        id: response.data.id,
+        name: response.data.name,
+        email: response.data.email,
+        token: response.data.token,
+      });
+
+      setLoadingAuth(false);
+
+    } catch (err) {
+      console.log('Erro ao acessar', err);
+      if (err.response) {
+        console.log('Erro de resposta:', err.response.data);
+      }
       setLoadingAuth(false);
     }
   }
@@ -102,9 +128,9 @@ export function AuthProvider({children}: AuthProviderProps) {
     })
   }
 
-  return(
-    <AuthContext.Provider value={{ user, isAuthenticated, signIn, loadingAuth, loading, signOut }}>
+  return (
+    <AuthContext.Provider value={{ user, isAuthenticated, signIn, loading, loadingAuth, signOut }}>
       {children}
     </AuthContext.Provider>
-  )
+  );
 }
