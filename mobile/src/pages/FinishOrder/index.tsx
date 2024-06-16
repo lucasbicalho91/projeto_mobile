@@ -30,6 +30,7 @@ export default function FinishOrder() {
       });
 
       navigation.popToTop();
+      
     } catch (err) {
       console.log('Erro ao finalizar, tente novamente');
     }
