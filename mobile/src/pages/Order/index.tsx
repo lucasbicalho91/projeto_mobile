@@ -5,8 +5,6 @@ import { useRoute, RouteProp, useNavigation } from "@react-navigation/native";
 
 import { Feather } from '@expo/vector-icons';
 
-import categories from "../../categories";
-import productsData from "../../products";
 import { ModalPicker } from "../../components/ModalPicker";
 import { ListItem } from "../../components/ListItem";
 
@@ -49,24 +47,19 @@ export default function Order() {
   const [categorySelected, setCategorySelected] = useState<CategoryProps | undefined>();
   const [modalCategoryVisible, setModalCategoryVisible] = useState(false);
 
-  const [products, setProducts] = useState<ProductProps[]>([]);
+  const [product, setProduct] = useState<ProductProps[]>([]);
   const [productSelected, setProductSelected] = useState<ProductProps | undefined>();
   const [modalProductVisible, setModalProductVisible] = useState(false);
 
   const [amount, setAmount] = useState('1');
   const [items, setItems] = useState<ItemProps[]>([]);
 
-  function generateItemId() {
-    const timestamp = Date.now().toString(); 
-    const randomNum = Math.floor(Math.random() * 10000).toString(); 
-    return timestamp + '-' + randomNum;
-  }  
-
   useEffect(() => {
     async function loadInfo() {
-
-      setCategory(categories);
-      setCategorySelected(categories[0]);
+      const response = await api.get('/category');
+      
+      setCategory(response.data);
+      setCategorySelected(response.data[0]);
 
     }
 
@@ -75,10 +68,14 @@ export default function Order() {
 
   useEffect(() => {
     async function loadProducts() {
+      const response = await api.get('/category/product', {
+        params: {
+          category_id: categorySelected?.id
+        }
+      })
 
-      const filteredProducts = productsData.filter(product => product.category_id === categorySelected?.id);
-      setProducts (filteredProducts);
-      setProductSelected(filteredProducts[0])
+      setProduct(response.data);
+      setProductSelected(response.data[0]);
       
     }
 
@@ -110,17 +107,29 @@ export default function Order() {
   }
 
   async function handleAdd() {
-    let data = {
-      id: generateItemId(),
+    const response = await api.post('/order/add', {
+      order_id: route.params?.order_id,
       product_id: productSelected?.id,
-      name: productSelected?.name,
       amount: Number(amount)
+    })
+
+    let data = {
+      id: response.data.id,
+      product_id: productSelected?.id as string,
+      name: productSelected?.name as string,
+      amount: amount
     }
 
     setItems(oldArray => [...oldArray, data])
+
   }
 
   async function handleDeleteItem(item_id: string) {
+    await api.delete('/order/remove', {
+      params: {
+        item_id: item_id
+      }
+    })
 
     let removeItem = items.filter( item => {
       return (item.id !== item_id)
@@ -158,7 +167,7 @@ export default function Order() {
         </TouchableOpacity>
       )}
 
-      {products.length !== 0 && (
+      {product.length !== 0 && (
       <TouchableOpacity style={styles.input}  onPress={ () => setModalProductVisible(true) }>
         <Text style={{ color: '#FFF'}}> 
           {productSelected?.name}
@@ -221,7 +230,7 @@ export default function Order() {
       
       <ModalPicker 
         handleCloseModal={ () => setModalProductVisible(false) }
-        options={products}
+        options={product}
         selectedItem={ handleChangeProduct }
       />
 
