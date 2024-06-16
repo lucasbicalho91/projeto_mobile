@@ -7,6 +7,8 @@ import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { StackPramsList } from "../../routes/app.routes";
 
+import { api } from "../../services/api";
+
 type RouteDetailParams = {
   FinishOrder: {
     number: string | number;
@@ -22,7 +24,15 @@ export default function FinishOrder() {
 
   async function handleFinish() {
 
-    navigation.popToTop();
+    try {
+      api.put('/order/send', {
+        order_id: route.params?.order_id
+      });
+
+      navigation.popToTop();
+    } catch (err) {
+      console.log('Erro ao finalizar, tente novamente');
+    }
     
   }
 
